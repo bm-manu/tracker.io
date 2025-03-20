@@ -1,0 +1,1015 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fuel Tracker</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.1/chart.min.js"></script>
+    <style>
+        :root {
+            --primary: #3498db;
+            --primary-dark: #2980b9;
+            --secondary: #2ecc71;
+            --secondary-dark: #27ae60;
+            --warning: #e74c3c;
+            --text-dark: #2c3e50;
+            --text-light: #ecf0f1;
+            --bg-light: rgba(249, 249, 249, 0.85);
+            --bg-card: rgba(255, 255, 255, 0.9);
+            --border: #e0e0e0;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            color: var(--text-dark);
+            line-height: 1.6;
+            padding: 20px;
+            background-attachment: fixed;
+            background-size: cover;
+            background-position: center;
+            position: relative;
+            min-height: 100vh;
+        }
+
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.4);
+            z-index: -1;
+        }
+
+        .background-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -2;
+            overflow: hidden;
+        }
+
+        .lamborghini-bg {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            animation: zoomEffect 20s infinite alternate ease-in-out;
+        }
+
+        @keyframes zoomEffect {
+            0% {
+                transform: scale(1) translate(0, 0);
+            }
+            50% {
+                transform: scale(1.1) translate(-2%, -1%);
+            }
+            100% {
+                transform: scale(1.05) translate(1%, -2%);
+            }
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h1, h2, h3 {
+            color: var(--text-dark);
+            margin-bottom: 15px;
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 2.2rem;
+            margin: 20px 0 30px 0;
+            color: var(--text-light);
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.7);
+            position: relative;
+        }
+
+        h1::after {
+            content: "";
+            display: block;
+            width: 100px;
+            height: 3px;
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            margin: 10px auto 0;
+            border-radius: 3px;
+        }
+
+        .card {
+            background-color: var(--bg-card);
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+            padding: 20px;
+            margin-bottom: 20px;
+            transition: transform 0.3s, box-shadow 0.3s;
+            backdrop-filter: blur(5px);
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            font-size: 16px;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.3);
+        }
+
+        button {
+            background-color: var(--primary);
+            color: var(--text-light);
+            border: none;
+            border-radius: 4px;
+            padding: 10px 15px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.1s;
+        }
+
+        button:hover {
+            background-color: var(--primary-dark);
+            transform: translateY(-2px);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        button.btn-secondary {
+            background-color: var(--secondary);
+        }
+
+        button.btn-secondary:hover {
+            background-color: var(--secondary-dark);
+        }
+
+        button.btn-warning {
+            background-color: var(--warning);
+        }
+
+        button.btn-warning:hover {
+            background-color: #c0392b;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+
+        th {
+            background-color: rgba(242, 242, 242, 0.7);
+            cursor: pointer;
+        }
+
+        th:hover {
+            background-color: rgba(224, 224, 224, 0.7);
+        }
+
+        tr:hover {
+            background-color: rgba(245, 245, 245, 0.5);
+        }
+
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background-color: rgba(248, 249, 250, 0.7);
+            border-radius: 6px;
+            padding: 15px;
+            text-align: center;
+            transition: transform 0.2s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-3px);
+            background-color: rgba(255, 255, 255, 0.9);
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            margin: 5px 0;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            color: #6c757d;
+        }
+
+        .chart-container {
+            height: 300px;
+            margin: 20px 0;
+            position: relative;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #6c757d;
+        }
+
+        .empty-state i {
+            font-size: 48px;
+            margin-bottom: 15px;
+            opacity: 0.7;
+        }
+
+        .loading {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255, 255, 255, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 999;
+        }
+
+        .success-message {
+            background-color: rgba(212, 237, 218, 0.9);
+            color: #155724;
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 15px;
+            display: none;
+            animation: fadeOut 3s forwards;
+            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        @keyframes fadeOut {
+            0% { opacity: 1; }
+            80% { opacity: 1; }
+            100% { opacity: 0; }
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .sort-icon {
+            margin-left: 5px;
+        }
+
+        @media (max-width: 768px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .stats-container {
+                grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            }
+            
+            .chart-container {
+                height: 250px;
+            }
+        }
+
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 20px;
+        }
+
+        .tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s;
+        }
+
+        .tab:hover {
+            background-color: rgba(240, 240, 240, 0.5);
+        }
+
+        .tab.active {
+            border-bottom: 2px solid var(--primary);
+            font-weight: bold;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.3s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <div class="background-container">
+        <img src="car.jpg" alt="Lamborghini" class="lamborghini-bg">
+    </div>
+
+    <div class="container">
+        <h1>Fuel Tracker</h1>
+        
+        <div class="success-message" id="successMessage"></div>
+        
+        <div class="grid">
+            <!-- Form Card -->
+            <div class="card">
+                <h2>Add New Fill-up</h2>
+                <form id="fuelForm">
+                    <div class="form-group">
+                        <label for="date">Date</label>
+                        <input type="date" id="date" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="odometer">Odometer Reading</label>
+                        <input type="number" id="odometer" step="0.1" placeholder="e.g. 45678" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="fuelQuantity">Fuel Quantity</label>
+                        <input type="number" id="fuelQuantity" step="0.001" placeholder="e.g. 12.5" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="fuelCost">Price per Unit</label>
+                        <input type="number" id="fuelCost" step="0.001" placeholder="e.g. 3.49" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="totalCost">Total Cost</label>
+                        <input type="number" id="totalCost" step="0.01" placeholder="Calculated automatically" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="notes">Notes</label>
+                        <input type="text" id="notes" placeholder="Optional notes">
+                    </div>
+                    
+                    <button type="submit">Add Fill-up</button>
+                </form>
+            </div>
+            
+            <!-- Stats Card -->
+            <div class="card">
+                <h2>Fuel Efficiency Stats</h2>
+                <div class="stats-container">
+                    <div class="stat-card">
+                        <div class="stat-label">Total Distance</div>
+                        <div class="stat-value" id="totalDistance">0.0</div>
+                        <div class="stat-label">miles</div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-label">Total Fuel</div>
+                        <div class="stat-value" id="totalFuel">0.00</div>
+                        <div class="stat-label">gallons</div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-label">Average MPG</div>
+                        <div class="stat-value" id="avgMPG">0.0</div>
+                        <div class="stat-label">mi/gal</div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-label">Total Cost</div>
+                        <div class="stat-value" id="totalCostStat">$0.00</div>
+                    </div>
+                </div>
+                
+                <div class="tabs">
+                    <div class="tab active" data-tab="mpgChart">MPG Trends</div>
+                    <div class="tab" data-tab="costChart">Cost Trends</div>
+                </div>
+                
+                <div class="tab-content active" id="mpgChart">
+                    <div class="chart-container">
+                        <canvas id="mpgTrendChart"></canvas>
+                        <div class="empty-state" id="emptyChartState">
+                            <i class="fas fa-chart-line"></i>
+                            <p>Add more entries to see MPG trends</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="tab-content" id="costChart">
+                    <div class="chart-container">
+                        <canvas id="costTrendChart"></canvas>
+                        <div class="empty-state" id="emptyCostChartState">
+                            <i class="fas fa-dollar-sign"></i>
+                            <p>Add more entries to see cost trends</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- History Table Card -->
+        <div class="card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                <h2>Fill-up History</h2>
+                <div class="btn-group">
+                    <button id="exportBtn" class="btn-secondary">
+                        <i class="fas fa-file-export"></i> Export Data
+                    </button>
+                    <button id="importBtn" class="btn-secondary">
+                        <i class="fas fa-file-import"></i> Import Data
+                    </button>
+                    <input type="file" id="importFile" class="file-input" accept=".json">
+                </div>
+            </div>
+            
+            <div id="tableContainer">
+                <table id="fuelLogsTable">
+                    <thead>
+                        <tr>
+                            <th data-sort="date">Date <span class="sort-icon"></span></th>
+                            <th data-sort="odometer">Odometer <span class="sort-icon"></span></th>
+                            <th data-sort="fuelQuantity">Fuel <span class="sort-icon"></span></th>
+                            <th data-sort="fuelCost">Price/Unit <span class="sort-icon"></span></th>
+                            <th data-sort="totalCost">Total Cost <span class="sort-icon"></span></th>
+                            <th data-sort="mpg">MPG <span class="sort-icon"></span></th>
+                            <th>Notes</th>
+                        </tr>
+                    </thead>
+                    <tbody id="fuelLogsBody"></tbody>
+                </table>
+                
+                <div class="empty-state" id="emptyTableState">
+                    <i class="fas fa-gas-pump"></i>
+                    <p>No fill-up records yet. Add your first fill-up using the form above.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Main application logic
+        document.addEventListener('DOMContentLoaded', function() {
+            // State
+            let fuelLogs = [];
+            let sortConfig = { key: 'date', direction: 'desc' };
+            let mpgChart = null;
+            let costChart = null;
+            
+            // DOM Elements
+            const fuelForm = document.getElementById('fuelForm');
+            const dateInput = document.getElementById('date');
+            const odometerInput = document.getElementById('odometer');
+            const fuelQuantityInput = document.getElementById('fuelQuantity');
+            const fuelCostInput = document.getElementById('fuelCost');
+            const totalCostInput = document.getElementById('totalCost');
+            const notesInput = document.getElementById('notes');
+            const fuelLogsBody = document.getElementById('fuelLogsBody');
+            const exportBtn = document.getElementById('exportBtn');
+            const importBtn = document.getElementById('importBtn');
+            const importFile = document.getElementById('importFile');
+            const successMessage = document.getElementById('successMessage');
+            const emptyTableState = document.getElementById('emptyTableState');
+            const emptyChartState = document.getElementById('emptyChartState');
+            const emptyCostChartState = document.getElementById('emptyCostChartState');
+            
+            // Stats Elements
+            const totalDistanceEl = document.getElementById('totalDistance');
+            const totalFuelEl = document.getElementById('totalFuel');
+            const avgMPGEl = document.getElementById('avgMPG');
+            const totalCostStatEl = document.getElementById('totalCostStat');
+            
+            // Initialize current date
+            dateInput.value = new Date().toISOString().split('T')[0];
+            
+            // Load data from localStorage if available
+            function loadData() {
+                const savedLogs = localStorage.getItem('fuelLogs');
+                if (savedLogs) {
+                    fuelLogs = JSON.parse(savedLogs);
+                    updateUI();
+                }
+            }
+            
+            // Save data to localStorage
+            function saveData() {
+                localStorage.setItem('fuelLogs', JSON.stringify(fuelLogs));
+            }
+            
+            // Calculate MPG
+            function calculateMPG(currentOdometer, previousOdometer, fuelQuantity) {
+                if (!previousOdometer) return 0;
+                const distance = currentOdometer - previousOdometer;
+                return distance / fuelQuantity;
+            }
+            
+            // Calculate statistics
+            function calculateStats() {
+                if (fuelLogs.length <= 0) {
+                    return {
+                        totalDistance: 0,
+                        totalFuel: 0,
+                        avgMPG: 0,
+                        totalCost: 0
+                    };
+                }
+                
+                // Sort logs by odometer for accurate calculations
+                const sortedLogs = [...fuelLogs].sort((a, b) => a.odometer - b.odometer);
+                
+                let totalDistance = 0;
+                let totalFuel = 0;
+                let totalCost = 0;
+                let totalMPG = 0;
+                let mpgCount = 0;
+                
+                sortedLogs.forEach((log, index) => {
+                    if (index > 0) {
+                        const distance = log.odometer - sortedLogs[index - 1].odometer;
+                        if (distance > 0) {
+                            totalDistance += distance;
+                            totalMPG += distance / log.fuelQuantity;
+                            mpgCount++;
+                        }
+                    }
+                    
+                    totalFuel += log.fuelQuantity;
+                    totalCost += log.totalCost;
+                });
+                
+                return {
+                    totalDistance,
+                    totalFuel,
+                    avgMPG: mpgCount > 0 ? totalMPG / mpgCount : 0,
+                    totalCost
+                };
+            }
+            
+            // Update UI with current data
+            function updateUI() {
+                // Update table
+                renderTable();
+                
+                // Update stats
+                updateStats();
+                
+                // Update charts
+                updateCharts();
+                
+                // Toggle empty states
+                toggleEmptyStates();
+            }
+            
+            // Toggle empty states
+            function toggleEmptyStates() {
+                if (fuelLogs.length === 0) {
+                    emptyTableState.style.display = 'block';
+                    document.getElementById('fuelLogsTable').style.display = 'none';
+                    emptyChartState.style.display = 'flex';
+                    emptyCostChartState.style.display = 'flex';
+                } else {
+                    emptyTableState.style.display = 'none';
+                    document.getElementById('fuelLogsTable').style.display = 'table';
+                    emptyChartState.style.display = fuelLogs.length > 1 ? 'none' : 'flex';
+                    emptyCostChartState.style.display = fuelLogs.length > 1 ? 'none' : 'flex';
+                }
+            }
+            
+            // Update statistics display
+            function updateStats() {
+                const stats = calculateStats();
+                
+                totalDistanceEl.textContent = stats.totalDistance.toFixed(1);
+                totalFuelEl.textContent = stats.totalFuel.toFixed(2);
+                avgMPGEl.textContent = stats.avgMPG.toFixed(1);
+                totalCostStatEl.textContent = `$${stats.totalCost.toFixed(2)}`;
+            }
+            
+            // Sort logs based on current config
+            function getSortedLogs() {
+                return [...fuelLogs].sort((a, b) => {
+                    let comparison = 0;
+                    
+                    switch (sortConfig.key) {
+                        case 'date':
+                            comparison = new Date(a.date) - new Date(b.date);
+                            break;
+                        case 'mpg':
+                            comparison = (a.mpg || 0) - (b.mpg || 0);
+                            break;
+                        default:
+                            comparison = a[sortConfig.key] - b[sortConfig.key];
+                    }
+                    
+                    return sortConfig.direction === 'asc' ? comparison : -comparison;
+                });
+            }
+            
+            // Render table with logs
+            function renderTable() {
+                const sortedLogs = getSortedLogs();
+                
+                fuelLogsBody.innerHTML = '';
+                
+                sortedLogs.forEach(log => {
+                    const row = document.createElement('tr');
+                    
+                    row.innerHTML = `
+                        <td>${new Date(log.date).toLocaleDateString()}</td>
+                        <td>${log.odometer.toLocaleString(undefined, {minimumFractionDigits: 1, maximumFractionDigits: 1})}</td>
+                        <td>${log.fuelQuantity.toFixed(3)}</td>
+                        <td>$${log.fuelCost.toFixed(3)}</td>
+                        <td>$${log.totalCost.toFixed(2)}</td>
+                        <td>${log.mpg > 0 ? log.mpg.toFixed(1) : 'N/A'}</td>
+                        <td>${log.notes || ''}</td>
+                    `;
+                    
+                    fuelLogsBody.appendChild(row);
+                });
+                
+                // Update sort icons
+                document.querySelectorAll('th .sort-icon').forEach(icon => {
+                    icon.textContent = '';
+                });
+                
+                const activeHeader = document.querySelector(`th[data-sort="${sortConfig.key}"] .sort-icon`);
+                if (activeHeader) {
+                    activeHeader.textContent = sortConfig.direction === 'asc' ? ' ↑' : ' ↓';
+                }
+            }
+            
+            // Update MPG chart
+            function updateCharts() {
+                // Prepare chart data
+                const chronologicalLogs = [...fuelLogs].sort((a, b) => new Date(a.date) - new Date(b.date));
+                
+                const labels = chronologicalLogs.map(log => new Date(log.date).toLocaleDateString());
+                const mpgData = chronologicalLogs.map(log => log.mpg || 0);
+                const costData = chronologicalLogs.map(log => log.fuelCost);
+                
+                // MPG Chart
+                if (mpgChart) {
+                    mpgChart.destroy();
+                }
+                
+                const mpgCtx = document.getElementById('mpgTrendChart').getContext('2d');
+                mpgChart = new Chart(mpgCtx, {
+                    type: 'line',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Miles Per Gallon',
+                            data: mpgData,
+                            borderColor: '#3498db',
+                            backgroundColor: 'rgba(52, 152, 219, 0.1)',
+                            tension: 0.1,
+                            fill: true
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'top',
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        return `MPG: ${context.raw.toFixed(1)}`;
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: false,
+                                title: {
+                                    display: true,
+                                    text: 'MPG'
+                                }
+                            }
+                        }
+                    }
+                });
+                
+                // Cost Chart
+                if (costChart) {
+                    costChart.destroy();
+                }
+                
+                const costCtx = document.getElementById('costTrendChart').getContext('2d');
+                costChart = new Chart(costCtx, {
+                    type: 'line',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Fuel Cost Per Gallon',
+                            data: costData,
+                            borderColor: '#e74c3c',
+                            backgroundColor: 'rgba(231, 76, 60, 0.1)',
+                            tension: 0.1,
+                            fill: true
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'top',
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        return `$${context.raw.toFixed(3)} per gallon`;
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: false,
+                                title: {
+                                    display: true,
+                                    text: 'Price per Gallon ($)'
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+            
+            // Calculate total cost automatically
+            function autoCalculateTotalCost() {
+                const fuelQuantity = parseFloat(fuelQuantityInput.value) || 0;
+                const fuelCost = parseFloat(fuelCostInput.value) || 0;
+                
+                if (fuelQuantity && fuelCost) {
+                    totalCostInput.value = (fuelQuantity * fuelCost).toFixed(2);
+                }
+            }
+            
+            // Show success message
+            function showSuccess(message) {
+                successMessage.textContent = message;
+                successMessage.style.display = 'block';
+                successMessage.style.opacity = 1;
+                
+                setTimeout(() => {
+                    successMessage.style.display = 'none';
+                }, 3000);
+            }
+            
+            // Update MPG for all logs based on odometer readings
+            function updateMPGForAllLogs() {
+                if (fuelLogs.length <= 1) return;
+                
+                // Sort by odometer ascending
+                const sortedLogs = [...fuelLogs].sort((a, b) => a.odometer - b.odometer);
+                
+                // Update MPG for each log
+                for (let i = 1; i < sortedLogs.length; i++) {
+                    const currentLog = sortedLogs[i];
+                    const previousLog = sortedLogs[i - 1];
+                    
+                    // Find the actual log in the original array
+                    const actualLog = fuelLogs.find(log => log.id === currentLog.id);
+                    
+                    if (actualLog) {
+                        const distance = currentLog.odometer - previousLog.odometer;
+                        actualLog.mpg = distance / currentLog.fuelQuantity;
+                    }
+                }
+            }
+            
+            // Event Listeners
+            
+            // Form submission
+            fuelForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                // Get form values
+                const date = dateInput.value;
+                const odometer = parseFloat(odometerInput.value);
+                const fuelQuantity = parseFloat(fuelQuantityInput.value);
+                const fuelCost = parseFloat(fuelCostInput.value);
+                const totalCost = parseFloat(totalCostInput.value);
+                const notes = notesInput.value;
+                
+                // Sort logs by odometer to find previous entry
+                const sortedByOdometer = [...fuelLogs].sort((a, b) => b.odometer - a.odometer);
+                const previousLog = sortedByOdometer.find(log => log.odometer < odometer);
+                
+                // Calculate MPG if there's a previous entry
+                const mpg = previousLog ? calculateMPG(odometer, previousLog.odometer, fuelQuantity) : 0;
+                
+                // Create new log
+                const newLog = {
+                    id: Date.now(),
+                    date,
+                    odometer,
+                    fuelQuantity,
+                    fuelCost,
+                    totalCost,
+                    notes,
+                    mpg
+                };
+                
+                // Add to logs and update UI
+                fuelLogs.push(newLog);
+                
+                // Update MPG for all logs
+                updateMPGForAllLogs();
+                
+                // Save to localStorage
+                saveData();
+                
+                
+                // Update UI
+                updateUI();
+                
+                // Reset form
+                fuelForm.reset();
+                dateInput.value = new Date().toISOString().split('T')[0];
+                
+                // Show success message
+                showSuccess('Fuel log added successfully!');
+            });
+            
+            // Auto-calculate total cost when inputs change
+            fuelQuantityInput.addEventListener('input', autoCalculateTotalCost);
+            fuelCostInput.addEventListener('input', autoCalculateTotalCost);
+            
+            // Table header sorting
+            document.querySelectorAll('th[data-sort]').forEach(header => {
+                header.addEventListener('click', function() {
+                    const key = this.getAttribute('data-sort');
+                    
+                    // Toggle direction if clicking same column
+                    if (sortConfig.key === key) {
+                        sortConfig.direction = sortConfig.direction === 'asc' ? 'desc' : 'asc';
+                    } else {
+                        sortConfig.key = key;
+                        sortConfig.direction = 'desc';
+                    }
+                    
+                    renderTable();
+                });
+            });
+            
+            // Export data
+            exportBtn.addEventListener('click', function() {
+                // Convert logs to CSV
+                let csvContent = "data:text/csv;charset=utf-8,";
+                csvContent += "Date,Odometer,Fuel Quantity,Fuel Cost,Total Cost,MPG,Notes\n";
+                
+                fuelLogs.forEach(log => {
+                    csvContent += `${log.date},${log.odometer},${log.fuelQuantity},${log.fuelCost},${log.totalCost},${log.mpg || 0},${log.notes || ""}\n`;
+                });
+                
+                // Create download link
+                const encodedUri = encodeURI(csvContent);
+                const link = document.createElement("a");
+                link.setAttribute("href", encodedUri);
+                link.setAttribute("download", "fuel_logs.csv");
+                document.body.appendChild(link);
+                
+                // Trigger download
+                link.click();
+                document.body.removeChild(link);
+                
+                showSuccess('Data exported successfully!');
+            });
+            
+            // Import button click
+            importBtn.addEventListener('click', function() {
+                importFile.click();
+            });
+            
+            // Import data from file
+            importFile.addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                
+                if (file) {
+                    const reader = new FileReader();
+                    
+                    reader.onload = function(e) {
+                        try {
+                            const csvData = e.target.result;
+                            const lines = csvData.split('\n');
+                            
+                            // Skip header row
+                            if (lines.length > 1) {
+                                // Confirm import
+                                if (confirm('This will replace your current data. Continue?')) {
+                                    // Clear current logs
+                                    fuelLogs = [];
+                                    
+                                    // Parse CSV data
+                                    for (let i = 1; i < lines.length; i++) {
+                                        const line = lines[i].trim();
+                                        if (line) {
+                                            const values = line.split(',');
+                                            
+                                            if (values.length >= 6) {
+                                                fuelLogs.push({
+                                                    id: Date.now() + i,
+                                                    date: values[0],
+                                                    odometer: parseFloat(values[1]),
+                                                    fuelQuantity: parseFloat(values[2]),
+                                                    fuelCost: parseFloat(values[3]),
+                                                    totalCost: parseFloat(values[4]),
+                                                    mpg: parseFloat(values[5]),
+                                                    notes: values[6] || ''
+                                                });
+                                            }
+                                        }
+                                    }
+                                    
+                                    // Save and update UI
+                                    saveData();
+                                    updateUI();
+                                    showSuccess('Data imported successfully!');
+                                }
+                            }
+                        } catch (error) {
+                            alert('Error importing data. Please check the file format.');
+                            console.error(error);
+                        }
+                        
+                        // Reset file input
+                        importFile.value = null;
+                    };
+                    
+                    reader.readAsText(file);
+                }
+            });
+            
+            // Delete all data button
+            document.getElementById('deleteAllBtn').addEventListener('click', function() {
+                if (confirm('Are you sure you want to delete all fuel logs? This cannot be undone.')) {
+                    fuelLogs = [];
+                    saveData();
+                    updateUI();
+                    showSuccess('All data deleted successfully.');
+                }
+            });
+            
+            // Initialize app
+            loadData();
+        });
+    </script>
